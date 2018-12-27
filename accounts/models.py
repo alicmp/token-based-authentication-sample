@@ -75,11 +75,3 @@ class User(AbstractBaseUser):
     def is_active(self):
         return self.active
 
-
-class UserToken(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    key = models.CharField(max_length=40)
-    expire_date = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return "{}".format(self.key)
