@@ -18,8 +18,9 @@ utils = Utils()
 utils.sent_token = Mock(return_value="123232")
 utils.verify_token = Mock(return_value=True)
 
-# creating a jwt token
+
 def create_token(user):
+    """Create jwt token based on users phone number"""
     payload = {
         'phone_number': user.phone_number,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=30)
@@ -27,8 +28,9 @@ def create_token(user):
     return jwt.encode(payload, settings.SECRET_KEY)
 
 
-# a helper method for getting token from header and authentication
+
 def authenticate_with_token(request):
+    """Helper method for getting token from header and authenticate"""
     auth = request.META.get('HTTP_AUTHORIZATION')
     if not auth:
         return False
@@ -110,7 +112,6 @@ def login_with_phone_number_confirmation(request):
         status="400"
     )
 
-# purpose of this view is to show whether authenrication works or not
 def test_api(request):
     if not authenticate_with_token(request):
         return HttpResponse(
