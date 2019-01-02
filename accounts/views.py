@@ -52,64 +52,54 @@ def authenticate_with_token(request):
 
 @csrf_exempt
 def login_with_phone_number(request):
-    if request.method == "POST":
-        phone_number = request.POST.get('phone_number')
-        if not phone_number or len(phone_number) != 11:
-            return HttpResponse(
-                json.dumps({'Error': "Please enter your phone number"}),
-                status="400"
-            )
+    phone_number = request.POST.get('phone_number')
+    if not phone_number or len(phone_number) != 11:
+        return HttpResponse(
+            json.dumps({'Error': "Please enter your phone number"}),
+            status="400"
+        )
+    try:
+        utils.sent_token(phone_number)
         try:
-            utils.sent_token(phone_number)
-            try:
-                User.objects.get(phone_number=phone_number)
-            except User.DoesNotExist:
-                User(phone_number=phone_number).save()
-            return HttpResponse(
-                json.dumps({'Success': "Confirmation code sends shortly."}),
-                status="200"
-            )
-        except Exception as e:
-            return HttpResponse(
-                json.dumps({'Error': str(e)}),
-                status="400"
-            )
-    return HttpResponse(
-        json.dumps({'Error': "Invalid request"}),
-        status="400"
-    )
+            User.objects.get(phone_number=phone_number)
+        except User.DoesNotExist:
+            User(phone_number=phone_number).save()
+        return HttpResponse(
+            json.dumps({'Success': "Confirmation code sends shortly."}),
+            status="200"
+        )
+    except Exception as e:
+        return HttpResponse(
+            json.dumps({'Error': str(e)}),
+            status="400"
+        )
 
 @csrf_exempt
 def login_with_phone_number_confirmation(request):
-    if request.method == "POST":
-        phone_number = request.POST.get('phone_number')
-        password = request.POST.get('password')
-        if not phone_number or not password:
-            return HttpResponse(
-                json.dumps({'Error': "Please enter your phone number and password"}),
-                status="400"
-            )
-        try:
-            user = User.objects.get(phone_number=phone_number)
-        except User.DoesNotExist:
-            return HttpResponse(
-                json.dumps({'Error': "Please enter valid phone number"}),
-                status="400"
-            )
-        if not utils.verify_token(phone_number, password):
-            return HttpResponse(
-                json.dumps({'Error': "Invalid phone_number/password"}),
-                status="400"
-            )
-        token = create_token(user)
+    phone_number = request.POST.get('phone_number')
+    password = request.POST.get('password')
+    if not phone_number or not password:
         return HttpResponse(
-            json.dumps({'token': token.decode('utf-8')}),
-            status=200,
-            content_type="application/json"
+            json.dumps({'Error': "Please enter your phone number and password"}),
+            status="400"
         )
+    try:
+        user = User.objects.get(phone_number=phone_number)
+    except User.DoesNotExist:
+        return HttpResponse(
+            json.dumps({'Error': "Please enter valid phone number"}),
+            status="400"
+        )
+    if not utils.verify_token(phone_number, password):
+        return HttpResponse(
+            json.dumps({'Error': "Invalid phone_number/password"}),
+            status="400"
+        )
+    token = create_token(user)
     return HttpResponse(
-        json.dumps({'Error': "Invalid phone_number/password"}),
-        status="400"
+        json.dumps({'token': token.decode('utf-8')}),
+        status=200,
+        content_type="application/json"
     )
 
 def test_api(request):
