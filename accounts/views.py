@@ -4,7 +4,7 @@ import random
 from unittest.mock import Mock
 import jwt
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.conf import settings
@@ -54,8 +54,8 @@ def authenticate_with_token(request):
 def login_with_phone_number(request):
     phone_number = request.POST.get('phone_number')
     if not phone_number or len(phone_number) != 11:
-        return HttpResponse(
-            json.dumps({'Error': "Please enter your phone number"}),
+        return JsonResponse(
+            {'Error': "Please enter your phone number"},
             status="400"
         )
     try:
@@ -64,13 +64,13 @@ def login_with_phone_number(request):
             User.objects.get(phone_number=phone_number)
         except User.DoesNotExist:
             User(phone_number=phone_number).save()
-        return HttpResponse(
-            json.dumps({'Success': "Confirmation code sends shortly."}),
+        return JsonResponse(
+            {'Success': "Confirmation code sends shortly."},
             status="200"
         )
     except Exception as e:
-        return HttpResponse(
-            json.dumps({'Error': str(e)}),
+        return JsonResponse(
+            {'Error': str(e)},
             status="400"
         )
 
@@ -79,36 +79,35 @@ def login_with_phone_number_confirmation(request):
     phone_number = request.POST.get('phone_number')
     password = request.POST.get('password')
     if not phone_number or not password:
-        return HttpResponse(
-            json.dumps({'Error': "Please enter your phone number and password"}),
+        return JsonResponse(
+            {'Error': "Please enter your phone number and password"},
             status="400"
         )
     try:
         user = User.objects.get(phone_number=phone_number)
     except User.DoesNotExist:
-        return HttpResponse(
-            json.dumps({'Error': "Please enter valid phone number"}),
+        return JsonResponse(
+            {'Error': "Please enter valid phone number"},
             status="400"
         )
     if not utils.verify_token(phone_number, password):
-        return HttpResponse(
-            json.dumps({'Error': "Invalid phone_number/password"}),
+        return JsonResponse(
+            {'Error': "Invalid phone_number/password"},
             status="400"
         )
     token = create_token(user)
-    return HttpResponse(
-        json.dumps({'token': token.decode('utf-8')}),
+    return JsonResponse(
+        {'token': token.decode('utf-8')},
         status=200,
-        content_type="application/json"
     )
 
 def test_api(request):
     if not authenticate_with_token(request):
-        return HttpResponse(
-            json.dumps({'Error': "Invalid token"}),
+        return JsonResponse(
+            {'Error': "Invalid token"},
             status="401"
         )
-    return HttpResponse(
-        json.dumps({'Success': "You can see the content"}),
+    return JsonResponse(
+        {'Success': "You can see the content"},
         status="200"
     )
