@@ -93,7 +93,7 @@ def login_with_phone_number_confirmation(request):
     if not utils.verify_token(phone_number, password):
         return JsonResponse(
             {'Error': "Invalid phone_number/password"},
-            status="400"
+            status="401"
         )
     token = create_token(user)
     return JsonResponse(
