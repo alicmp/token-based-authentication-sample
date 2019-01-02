@@ -4,7 +4,7 @@ import random
 from unittest.mock import Mock
 import jwt
 
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.conf import settings
